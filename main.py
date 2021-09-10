@@ -1,6 +1,6 @@
 import gzip
 import re
-
+import os
 
 def get_tenant_id(config_file):
 
@@ -40,23 +40,26 @@ def get_info_from_user():
 
 
 def fix_config_file(serial_number,tenant,config_file):
+    
+    old_config = 'OLD_' + config_file
+    os.rename(config_file, old_config)
+    
+    print(f'Old config file renamed to: "{old_config}"')
 
-    with open("new_config.txt",'w') as nc:
+    with gzip.open(config_file,'wb') as nc:
 
-        with gzip.open(config_file) as cf:
+        with gzip.open(old_config,'rt') as old_cf:
 
-            for line in cf:
+            for line in old_cf:
 
-                text_line = line.decode("utf-8")
-
-                if 'tenant_id' in text_line:
-                    new_line = text_line.replace(tenant,serial_number)
+                if 'tenant_id' in line:
+                    new_line = line.replace(tenant,serial_number)
                     nc.write(new_line)
 
                 else:
-                    nc.write(text_line)
+                    nc.write(line)
     
-    print('File saved as: "new_config.txt"')
+    print(f'Updated file saved as: "{config_file}"')
 
 
 def main():
