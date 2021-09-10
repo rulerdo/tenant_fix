@@ -6,12 +6,12 @@ def get_tenant_id(config_file):
 
     regex = r'\{"tenant_id":"(.*?)"\}'
 
-    with gzip.open(config_file) as cf:
+    with gzip.open(config_file,'rt') as cf:
 
         for line in cf:
 
-            if 'tenant_id' in line.decode("utf-8"):
-                tenant = re.search(regex,line.decode("utf-8")).group(1)
+            if 'tenant_id' in line:
+                tenant = re.search(regex,line).group(1)
                 print(f'Current Tenant value is: {tenant}')
                 break
                 
@@ -60,7 +60,7 @@ def fix_config_file(serial_number,tenant,config_file):
     
     print(f'Old config file renamed to: "{old_config}"')
 
-    with gzip.open(config_file,'wb') as nc:
+    with gzip.open(config_file,'wt') as nc:
 
         with gzip.open(old_config,'rt') as old_cf:
 
@@ -74,6 +74,37 @@ def fix_config_file(serial_number,tenant,config_file):
                     nc.write(line)
     
     print(f'Updated file saved as: "{config_file}"')
+
+
+def post_checks(config_file,serial_number):
+
+    tenant = get_tenant_id(config_file)
+
+    if tenant == serial_number:
+        response = f'Post checks OK!'
+
+    else:
+        response = 'Something went wrong!'
+
+    return response
+
+
+def rollback_config_files(config_file):
+
+    os.remove(config_file)
+    print('New config file deleted')
+
+    os.rename('OLD_' + config_file, config_file)
+    print('Original config file name reverted')
+
+
+def print_config_file(config_file):
+
+    print('Printing NEW config file:\n')
+    with gzip.open(config_file,'rt') as cf:
+
+        x = cf.read()
+        print(x)
 
 
 def main():
@@ -105,6 +136,18 @@ def main():
     else:
         print('No invalid key log found!')
         print('No issues')
+
+    # Uncomment next 2 lines to troubleshot issues with config files
+    # print_config_file(cf)
+    # print_config_file('OLD_' + cf)
+
+    print('Performing post checks ...')
+    response = post_checks(cf,sn)
+    print(response)
+
+    if response == 'Something went wrong!':
+        print('Rolling back config file changes ...')
+        rollback_config_files(cf)
 
 
 if __name__ == '__main__':
