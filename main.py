@@ -31,12 +31,26 @@ def find_invalid_key(log_file):
     return invalid_found
     
 
-def get_info_from_user():
+def get_config_file_name():
 
     cf_name = input('Provide the config file name (.gz format): ')
+    
+    return cf_name
+
+
+
+def get_log_file_name():
+
     lf_name = input('Provide the log file name (.txt format): ')
     
-    return cf_name,lf_name
+    return lf_name
+
+
+def get_serial_number():
+    
+    sn = input('Provide the device serial number: ')
+    
+    return sn
 
 
 def fix_config_file(serial_number,tenant,config_file):
@@ -64,9 +78,11 @@ def fix_config_file(serial_number,tenant,config_file):
 
 def main():
 
-    cf,lf = get_info_from_user()
+    cf = get_config_file_name()
+    
+    lf = get_log_file_name()
 
-    sn = input('Provide the device serial number: ')
+    sn = get_serial_number()
 
     print('Obtaining tenant value from config file ...')
     tenant = get_tenant_id(cf)
